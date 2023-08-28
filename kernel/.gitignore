@@ -1,0 +1,4 @@
+/limine-zig
+/zig-cache
+/zig-out
+/*.elf
