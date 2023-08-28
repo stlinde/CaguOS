@@ -14,7 +14,7 @@ inline fn done() noreturn {
 
 // The following will be our kernel's entry point.
 export fn _start() callconv(.C) noreturn {
-    framebufferWall();
+    fillFramebuffer();
 
     // We're done, just hang...
     done();
@@ -44,6 +44,29 @@ fn writePixel(framebuffer: *limine.Framebuffer, x: u64, y: u64) void {
     // const pixel_offset = y * framebuffer.pitch + x * 4;
     const pixel_offset = y * framebuffer.pitch + x * 4;
 
+    const blue = 0x000000FF;
+    const green = blue << 8;
+    const red = blue << (8 * 2);
+    const alpha = blue << (8 * 3);
+
+    switch (x) {
+        // Blue
+        0...250 => {
+            @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = blue;
+        },
+        // Green
+        251...500 => {
+            @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = green;
+        },
+        // Red
+        501...750 => {
+            @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = red;
+        },
+        // Alpha
+        else => {
+            @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = alpha;
+        },
+    }
     // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
-    @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = 0xFFFFFFFF;
+    // @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = 0x0000FF00;
 }
