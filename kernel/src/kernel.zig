@@ -14,6 +14,13 @@ inline fn done() noreturn {
 
 // The following will be our kernel's entry point.
 export fn _start() callconv(.C) noreturn {
+    framebufferWall();
+
+    // We're done, just hang...
+    done();
+}
+
+fn fillFramebuffer() void {
     // Ensure we got a framebuffer.
     if (framebuffer_request.response) |framebuffer_response| {
         if (framebuffer_response.framebuffer_count < 1) {
@@ -23,16 +30,20 @@ export fn _start() callconv(.C) noreturn {
         // Get the first framebuffer's information.
         const framebuffer = framebuffer_response.framebuffers()[0];
 
-        for (0..100) |i| {
-            // Calculate the pixel offset using the framebuffer information we obtained above.
-            // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
-            const pixel_offset = i * framebuffer.pitch + i * 4;
-
-            // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
-            @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = 0xFFFFFFFF;
+        for (0..framebuffer.height) |y| {
+            for (0..framebuffer.width) |x| {
+                writePixel(framebuffer, @as(u64, x), @as(u64, y));
+            }
         }
     }
+}
 
-    // We're done, just hang...
-    done();
+fn writePixel(framebuffer: *limine.Framebuffer, x: u64, y: u64) void {
+    // Calculate the pixel offset using the framebuffer information we obtained above.
+    // We skip `i` scanlines (pitch is provided in bytes) and add `i * 4` to skip `i` pixels forward.
+    // const pixel_offset = y * framebuffer.pitch + x * 4;
+    const pixel_offset = y * framebuffer.pitch + x * 4;
+
+    // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
+    @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = 0xFFFFFFFF;
 }
