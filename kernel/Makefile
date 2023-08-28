@@ -10,7 +10,7 @@ all: kernel
 .PHONY: kernel
 kernel:
 	zig build $(ZIGFLAGS)
-	cp zig-out/bin/kernel kernel.elf
+	cp zig-out/bin/kernel.elf kernel.elf
 
 .PHONY: clean
 clean:

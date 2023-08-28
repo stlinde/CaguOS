@@ -1,11 +1,10 @@
 const std = @import("std");
 
 pub fn build(b: *std.build.Builder) !void {
-    // Define a freestanding x86_64 cross-compilation target.
     var target: std.zig.CrossTarget = .{
-        .cpu_arch = .x86_64,
-        .os_tag = .freestanding,
-        .abi = .none,
+        .cpu_arch = .x86_64, // We're building a x86-64 OS
+        .os_tag = .freestanding, // Kernel must be built freestanding - that is without stdlib etc.
+        .abi = .none, // No ABI (Application Binary Interface)
     };
 
     // Disable CPU features that require additional initialization
@@ -22,7 +21,7 @@ pub fn build(b: *std.build.Builder) !void {
     const optimize = b.standardOptimizeOption(.{});
     const limine = b.dependency("limine", .{});
     const kernel = b.addExecutable(.{
-        .name = "kernel",
+        .name = "kernel.elf",
         .root_source_file = .{ .path = "src/kernel.zig" },
         .target = target,
         .optimize = optimize,
@@ -30,7 +29,7 @@ pub fn build(b: *std.build.Builder) !void {
     kernel.code_model = .kernel;
     kernel.addModule("limine", limine.module("limine"));
     kernel.setLinkerScriptPath(.{ .path = "linker.ld" });
-    kernel.pie = true;
+    kernel.pie = true; // Set Position Independent Executable to true.
 
     b.installArtifact(kernel);
 }
