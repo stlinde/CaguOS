@@ -1,10 +1,23 @@
 const limine = @import("limine");
 const std = @import("std");
 
+const PSF1_FONT_MAGIC = 0x0436;
+const PSF2_FONT_MAGIC = 0x864ab572;
+
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent. In Zig, `export var` is what we use.
 pub export var framebuffer_request: limine.FramebufferRequest = .{};
+
+// PSF font import
+// The variable is defined in the linked object file 'font.o'.
+// TODO: How do we use the variable in a zig file?
+//       In C it would be done as follows:
+//       extern char _binary_font_psf_start;
+//       extern char _binary_font_psf_end;
+// Pretty simple apparently, just need to remember the const or var keyword.
+extern const _binary_font_psf_start: u8;
+extern const _binary_font_psf_end: u8;
 
 inline fn done() noreturn {
     while (true) {
@@ -20,6 +33,7 @@ export fn _start() callconv(.C) noreturn {
     done();
 }
 
+// fillFramebuffer calls writePixel which is probably inefficient see: https://wiki.osdev.org/Drawing_In_a_Linear_Framebuffer
 fn fillFramebuffer() void {
     // Ensure we got a framebuffer.
     if (framebuffer_request.response) |framebuffer_response| {
@@ -70,3 +84,7 @@ fn writePixel(framebuffer: *limine.Framebuffer, x: u64, y: u64) void {
     // Write 0xFFFFFFFF to the provided pixel offset to fill it white.
     // @as(*u32, @ptrCast(@alignCast(framebuffer.address + pixel_offset))).* = 0x0000FF00;
 }
+
+// fn psfInit() void {
+//     const glyph: u16 = undefined;
+// }

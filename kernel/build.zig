@@ -28,6 +28,11 @@ pub fn build(b: *std.build.Builder) !void {
     });
     kernel.code_model = .kernel;
     kernel.addModule("limine", limine.module("limine"));
+
+    // Generally we would add this file to the 'ld' command when linking our obj files.
+    // Since we are using the builtin linker to generate the final ELF file, we cannot
+    // do this. Thus, we need to add the object file to the kernel here.
+    kernel.addObjectFile(.{ .path = "font.o" });
     kernel.setLinkerScriptPath(.{ .path = "linker.ld" });
     kernel.pie = true; // Set Position Independent Executable to true.
 
