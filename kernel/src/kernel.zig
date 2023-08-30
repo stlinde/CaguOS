@@ -9,16 +9,6 @@ const PSF2_FONT_MAGIC = 0x864ab572;
 // be made volatile or equivalent. In Zig, `export var` is what we use.
 pub export var framebuffer_request: limine.FramebufferRequest = .{};
 
-// PSF font import
-// The variable is defined in the linked object file 'font.o'.
-// TODO: How do we use the variable in a zig file?
-//       In C it would be done as follows:
-//       extern char _binary_font_psf_start;
-//       extern char _binary_font_psf_end;
-// Pretty simple apparently, just need to remember the const or var keyword.
-extern const _binary_font_psf_start: u8;
-extern const _binary_font_psf_end: u8;
-
 inline fn done() noreturn {
     while (true) {
         asm volatile ("hlt");
